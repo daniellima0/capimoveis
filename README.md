@@ -586,39 +586,6 @@ returns boolean as $f_verificar_proprietario$
 	end;
 $f_verificar_proprietario$ language plpgsql;
 ```
-#### Regra 3
-
-```sql
-create or replace function f_tabela_comissao() 
-returns trigger as $f_tabela_comissao$
-	declare
-	vid_corretor integer;
-	vid_imovel integer;
-	vcomissao numeric(9,2);
-	vvalor_imov	numeric(9,2);
-	
-	cur_imov no scroll cursor(key integer) for
-											select valor_imovel from tb_imovel where id_imov = key;
-	begin
-		vid_corretor := OLD.id_corretor;
-		vid_imovel := OLD.id_imov;
-		
-		open cur_imov(vid_imovel);
-		fetch cur_imov into vvalor_imov;
-		close cur_imov;
-		
-		vcomissao := (5/100) * vvalor_imov;
-		
-		execute 'insert into tb_comissao(id_corretor, valor_comissao, dt_comissao) 
-						values('||vid_corretor||', '||vvalor_comissao||', '||current_date||')';
-		
-		return new;
-	end;
-$f_tabela_comissao$ language plpgsql;
-
-create or replace trigger tr_tabela_comissao after insert on tb_contrato
-	for each row execute function f_tabela_comissao();
-```
 ## DML
 
 ```sql
