@@ -510,7 +510,7 @@ returns trigger as $f_autodelete_corretor$
 	end;
 $f_autodelete_corretor$ language plpgsql;
 
-create or replace trigger tr_autodelete_corretor after delete on tb_corretor
+create or replace trigger tr_autodelete_corretor before delete on tb_corretor
 	for each row execute function f_autodelete_corretor();
 ```
 
