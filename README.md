@@ -154,7 +154,6 @@ A partir do desenvolvimento do projeto, foi solicitado pelo orientador, que dese
 
 1) Deletar automaticamente tudo relacionado ao corretor caso ele seja excluído do sistema.
 2) Autualizar automaticamente o proprietário após a compra de algum imóvel, representado pela inserção da tupla de contrato.
-3) Adicionar automaticamente na tabela comissao, o valor da comissao, o id do corretor, e a data do contrato, assim que um novo contrato for feito.
 
 # Scripts
 ## DDL
