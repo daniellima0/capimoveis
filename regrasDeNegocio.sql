@@ -57,8 +57,8 @@ returns trigger as $f_atualiza_proprietario$
 		open cur_cliente(vid_cliente);
 		fetch cur_cliente into vreg_cliente;
 		close cur_cliente;
-		execute 'insert into tb_proprietario(nome, email, telefone, cpf) 
-					values('||vreg_cliente.nome||', '||vreg_cliente.email||', '||vreg_cliente.telefone||', '||vreg_cliente.cpf||')';
+		insert into tb_proprietario(nome, email, telefone, cpf) 
+					values(vreg_cliente.nome,vreg_cliente.email,vreg_cliente.telefone,vreg_cliente.cpf);
 		
 		open cur_prop(vid_imov);
 		fetch cur_prop into vid_proprietario;
@@ -66,7 +66,7 @@ returns trigger as $f_atualiza_proprietario$
 		
 		vresultado := f_verificar_proprietario(vid_proprietario);
 		if vresultado then 
-			execute 'delete from tb_proprietario p where (p.id_prop = '||vid_proprietario||')';
+			delete from tb_proprietario p where (p.id_prop = vid_proprietario);
 			raise notice 'Como o proprietario possuia somente o imovel vendido ele foi retirado do sistema.';
 		else
 			raise notice 'Proprietario possui multiplos imoveis por isso sera mantido no sistema.';
@@ -75,7 +75,7 @@ returns trigger as $f_atualiza_proprietario$
 		open cur_novo_prop(vreg_cliente.cpf);
 		fetch cur_novo_prop into vid_novo_proprietario;
 		close cur_novo_prop;
-		execute 'update tb_imoveis set id_prop = '||vid_novo_proprietario||' where id_prop = '||vid_proprietario;
+		update tb_imovel set id_prop = vid_novo_proprietario where id_prop = vid_proprietario;
 		
 		return new;
 	end;
@@ -83,3 +83,30 @@ $f_atualiza_proprietario$ language plpgsql;
 
 create or replace trigger tr_atualiza_proprietario after insert on tb_contrato
 	for each row execute function f_atualiza_proprietario();
+	
+INSERT INTO tb_contrato (certidao_neg, dt_contrato, id_formapag, id_corretor, id_cliente, id_imov) VALUES ('V', '15/07/2023', 1, 3, 1, 10);
+
+--Regra 3
+create or replace function f_tabela_comissao() 
+returns trigger as $f_tabela_comissao$
+	declare
+	vid_corretor integer;
+	vid_imovel integer;
+	vcomissao numeric(9,2);
+	vvalor_imov	numeric(9,2);
+	
+	begin
+		vid_corretor := NEW.id_corretor;
+		vid_imovel := NEW.id_imov;
+		
+		select valor_imov from tb_imovel where id_imov = vid_imovel into vvalor_imov;
+		
+		vcomissao := (0.05 * vvalor_imov);
+		
+		insert into tb_comissao(id_corretor, valor_comissao, dt_comissao) 
+						values (vid_corretor,vcomissao, current_date);
+		return new;
+	end;
+$f_tabela_comissao$ language plpgsql;
+create or replace trigger tr_tabela_comissao after insert on tb_contrato
+	for each row execute function f_tabela_comissao();
